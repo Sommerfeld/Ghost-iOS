@@ -6,7 +6,10 @@ import {
   TextInput,
   Button,
   KeyboardAvoidingView,
-  AsyncStorage
+  AsyncStorage,
+  FlatList,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
 import { getClientInformation, login } from './src/Auth';
 import { StackNavigator } from 'react-navigation';
@@ -42,14 +45,14 @@ class URLScreen extends React.Component {
               .then(data => {
                 this.props.navigation.navigate('Login', {
                   ...data,
-                  url: this.state.text
+                  url: this.state.text,
                 });
               })
               .catch(err => {
                 this.setState({
                   errorMessage: `No ghost admin-panel in "${
                     this.state.text
-                  }" found.`
+                  }" found.`,
                 });
               });
           }}
@@ -118,7 +121,7 @@ class LoginScreen extends React.Component {
                     JSON.stringify({
                       email: this.state.email,
                       url: params.url,
-                      ...data
+                      ...data,
                     })
                   )
                     .then(() => this.props.navigation.navigate('PostList'))
@@ -130,7 +133,7 @@ class LoginScreen extends React.Component {
               .catch(err => {
                 console.log(err);
                 this.setState({
-                  errorMessage: 'Please check you network connection.'
+                  errorMessage: 'Please check you network connection.',
                 });
               });
           }}
@@ -141,12 +144,68 @@ class LoginScreen extends React.Component {
 }
 
 class PostList extends React.Component {
+  static navigationOptions = {
+    title: 'Your stories',
+  };
+
   constructor(props) {
     super(props);
     this.state = {};
   }
+
+  componentDidMount() {
+    AsyncStorage.getItem('userInfo').then(data => {
+      console.log(data);
+      const clientInfo = JSON.parse(data);
+      this.setState({ clientInfo });
+      fetch(
+        `${
+          clientInfo.url
+        }/ghost/api/v0.1/posts/?status=all&include=author,tags&formats=plaintext,html`,
+        {
+          headers: {
+            Authorization: `Bearer ${clientInfo.access_token}`,
+          },
+        }
+      )
+        .then(res => res.json())
+        .then(({ posts }) => this.setState({ posts }));
+    });
+  }
+
   render() {
-    return;
+    if (!this.state.posts) {
+      return <ActivityIndicator size="large" color="#0000ff" />;
+    }
+
+    return (
+      <FlatList
+        data={this.state.posts}
+        keyExtractor={item => item.uuid}
+        renderItem={({ item }) => (
+          <View style={{ margin: 10, backgroundColor: 'white' }}>
+            {item.feature_image && (
+              <Image
+                style={{ width: '100%', aspectRatio: 21 / 9 }}
+                source={{ uri: item.feature_image }}
+              />
+            )}
+            <Text style={{ fontSize: 22, color: '#15171a' }}>
+              {item.title}{' '}
+            </Text>
+            <Text>{item.plaintext.substring(0, 30)}...</Text>
+            <Text style={{ color: '#738a94' }}>
+              <Text
+                style={{ color: item.status === 'draft' ? 'red' : 'black' }}
+              >
+                {item.status}
+              </Text>{' '}
+              by {item.author.name} - {item.published_at}
+            </Text>
+          </View>
+        )}
+      />
+    );
   }
 }
 
@@ -155,33 +214,43 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   textinput: {
     height: 40,
     width: '80%',
     borderColor: 'gray',
     borderWidth: 1,
-    color: 'white'
+    color: 'white',
   },
   text: {
-    color: 'grey'
+    color: 'grey',
   },
   errorText: {
-    color: 'red'
-  }
+    color: 'red',
+  },
 });
 
-const RootNavigator = StackNavigator({
-  URL: {
-    screen: URLScreen
+const RootNavigator = StackNavigator(
+  {
+    URL: {
+      screen: URLScreen,
+    },
+    Login: {
+      screen: LoginScreen,
+    },
+    PostList: {
+      screen: PostList,
+    },
   },
-  Login: {
-    screen: LoginScreen
-  },
-  PostList: {
-    screen: PostList
+  {
+    initialRouteName: 'PostList',
+    navigationOptions: {
+      headerStyle: {
+        backgroundColor: '#f4f8fb',
+      },
+    },
   }
-});
+);
 
 export default RootNavigator;
