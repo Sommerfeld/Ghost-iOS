@@ -1,6 +1,14 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
-import { getClientInformation } from './src/Auth';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Button,
+  KeyboardAvoidingView,
+  AsyncStorage
+} from 'react-native';
+import { getClientInformation, login } from './src/Auth';
 import { StackNavigator } from 'react-navigation';
 
 class URLScreen extends React.Component {
@@ -11,8 +19,10 @@ class URLScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Blogadress</Text>
+      <KeyboardAvoidingView behavior="padding" style={styles.container}>
+        <View>
+          <Text style={styles.text}>Blogadress</Text>
+        </View>
         <TextInput
           placeholder={'https://demo.ghost.io'}
           style={styles.textinput}
@@ -20,6 +30,7 @@ class URLScreen extends React.Component {
           value={this.state.text}
           keyboardType={'url'}
           autoCapitalize={'none'}
+          returnKeyType={'done'}
         />
         {this.state.errorMessage && (
           <Text style={styles.errorText}>{this.state.errorMessage}</Text>
@@ -29,18 +40,21 @@ class URLScreen extends React.Component {
           onPress={() => {
             getClientInformation(this.state.text)
               .then(data => {
-                console.log(data);
+                this.props.navigation.navigate('Login', {
+                  ...data,
+                  url: this.state.text
+                });
               })
               .catch(err => {
                 this.setState({
                   errorMessage: `No ghost admin-panel in "${
                     this.state.text
-                  }" found.`,
+                  }" found.`
                 });
               });
           }}
         />
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 }
@@ -52,7 +66,7 @@ class LoginScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <TextInput
           keyboardAppearance="dark"
           placeholder={'email'}
@@ -82,40 +96,92 @@ class LoginScreen extends React.Component {
           secureTextEntry={true}
           returnKeyType={'done'}
         />
-      </View>
+        {this.state.errorMessage && (
+          <Text style={styles.errorText}>{this.state.errorMessage}</Text>
+        )}
+        <Button
+          title="Next"
+          onPress={() => {
+            const { params } = this.props.navigation.state;
+            login(
+              this.state.email,
+              this.state.password,
+              params.url,
+              params.clientSecret,
+              params.clientId
+            )
+              .then(data => {
+                console.log(data);
+                if (data.access_token) {
+                  AsyncStorage.setItem(
+                    'userInfo',
+                    JSON.stringify({
+                      email: this.state.email,
+                      url: params.url,
+                      ...data
+                    })
+                  )
+                    .then(() => this.props.navigation.navigate('PostList'))
+                    .catch(err => console.log(err));
+                } else {
+                  this.setState({ errorMessage: 'Wrong email or password.' });
+                }
+              })
+              .catch(err => {
+                console.log(err);
+                this.setState({
+                  errorMessage: 'Please check you network connection.'
+                });
+              });
+          }}
+        />
+      </KeyboardAvoidingView>
     );
+  }
+}
+
+class PostList extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+  render() {
+    return;
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 350,
+    flex: 1,
     backgroundColor: '#000',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   textinput: {
     height: 40,
     width: '80%',
     borderColor: 'gray',
     borderWidth: 1,
-    color: 'white',
+    color: 'white'
   },
   text: {
-    color: 'grey',
+    color: 'grey'
   },
   errorText: {
-    color: 'red',
-  },
+    color: 'red'
+  }
 });
 
 const RootNavigator = StackNavigator({
-  Login: {
-    screen: LoginScreen,
-  },
   URL: {
-    screen: URLScreen,
+    screen: URLScreen
   },
+  Login: {
+    screen: LoginScreen
+  },
+  PostList: {
+    screen: PostList
+  }
 });
 
 export default RootNavigator;
