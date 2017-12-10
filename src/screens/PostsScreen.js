@@ -11,8 +11,10 @@ import {
   ActivityIndicator,
   Image,
   TouchableHighlight,
+  TouchableOpacity,
 } from 'react-native';
-import { Svg } from 'expo';
+import { LinearGradient } from 'expo';
+import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
 import { getClientInformation, login } from '../Auth';
 
@@ -20,13 +22,30 @@ class PostList extends React.Component {
   static navigationOptions = {
     title: 'Your stories',
     tabBarIcon: ({ tintColor }) => (
-      <Svg width={32} height={32}>
-        <Svg.Path
-          d="M28.688 0H3.313c-.375 0-.625.313-.625.688v30.625c0 .375.25.688.625.688h25.375c.375 0 .625-.313.625-.688V.688c0-.375-.25-.688-.625-.688zM28 30.688H4V1.313h3.313v1.375h-.625v2.625h2.625V2.688h-.625V1.313h4v1.375H12v2.625h2.688V2.688H14V1.313h4v1.375h-.688v2.625H20V2.688h-.688V1.313h4v1.375h-.625v2.625h2.625V2.688h-.625V1.313H28zM23.313 9.313H8.688c-.375 0-.688.313-.688.688s.313.688.688.688h14.625c.375 0 .688-.313.688-.688s-.313-.688-.688-.688zm0 4H8.688c-.375 0-.688.313-.688.688s.313.688.688.688h14.625c.375 0 .688-.313.688-.688s-.313-.688-.688-.688zm0 4H8.688c-.375 0-.688.313-.688.688s.313.688.688.688h14.625c.375 0 .688-.313.688-.688s-.313-.688-.688-.688zm0 4H8.688c-.375 0-.688.313-.688.688s.313.688.688.688h14.625c.375 0 .688-.313.688-.688s-.313-.688-.688-.688zm0 4H8.688c-.375 0-.688.313-.688.688s.313.688.688.688h14.625c.375 0 .688-.313.688-.688s-.313-.688-.688-.688z"
-          stroke="none"
-          fill={tintColor}
-        />
-      </Svg>
+      <Ionicons name="ios-paper-outline" size={32} color={tintColor} />
+    ),
+    headerRight: (
+      <TouchableOpacity>
+        <LinearGradient
+          colors={['#a9d142', '#9abf3b']}
+          style={{
+            padding: 8,
+            borderRadius: 8,
+            marginRight: 8,
+          }}
+        >
+          <Text
+            style={{
+              fontWeight: '400',
+              color: '#fff',
+              textShadowColor: '#000',
+              textShadowRadius: 1,
+            }}
+          >
+            New story
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
     ),
   };
 
@@ -50,7 +69,7 @@ class PostList extends React.Component {
       const { posts } = await fetch(
         `${
           clientInfo.url
-        }/ghost/api/v0.1/posts/?status=all&include=author,tags&formats=plaintext`,
+        }/ghost/api/v0.1/posts/?status=all&staticPages=all&include=author,tags&formats=plaintext`,
         {
           headers: {
             Authorization: `Bearer ${clientInfo.access_token}`,
@@ -77,11 +96,17 @@ class PostList extends React.Component {
         automaticallyAdjustContentInsets={true}
         data={this.state.posts}
         keyExtractor={item => item.uuid}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <TouchableHighlight
             onPress={() => this.props.navigation.navigate('Editor')}
             underlayColor="#9cd7f7"
-            style={{ margin: 8, backgroundColor: 'white' }}
+            style={{
+              margin: 8,
+              marginTop: index === 0 ? 8 : 0,
+              backgroundColor: 'white',
+              borderRadius: 4,
+              overflow: 'hidden',
+            }}
           >
             <View>
               {item.feature_image && (
@@ -92,23 +117,41 @@ class PostList extends React.Component {
               )}
               <View style={{ padding: 8 }}>
                 <Text
-                  style={{ fontSize: 22, color: '#15171a', fontWeight: '600' }}
+                  style={{
+                    fontSize: 22,
+                    color: '#15171a',
+                    fontWeight: '600',
+                  }}
                 >
                   {item.title}{' '}
                 </Text>
                 <Text
                   numberOfLines={1}
-                  style={{ fontWeight: '300', paddingBottom: 8 }}
+                  style={{
+                    fontWeight: '300',
+                    paddingBottom: 8,
+                    color: '#15171a',
+                    letterSpacing: 0.2,
+                  }}
                 >
                   {item.plaintext}
                 </Text>
-                <Text style={{ color: '#738a94', fontWeight: '300' }}>
+                <Text
+                  style={{
+                    color: '#738a94',
+                    fontWeight: '300',
+                    letterSpacing: 0.2,
+                  }}
+                >
                   <Text
-                    style={{ color: item.status === 'draft' ? 'red' : 'black' }}
+                    style={{
+                      color: item.status === 'draft' ? 'red' : '#15171a',
+                    }}
                   >
                     {item.status}
                   </Text>{' '}
-                  by {item.author.name} -{' '}
+                  by{' '}
+                  <Text style={{ color: '#15171a' }}>{item.author.name}</Text> -{' '}
                   {moment(item.published_at).from(moment.utc())}
                 </Text>
               </View>

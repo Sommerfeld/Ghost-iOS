@@ -1,23 +1,11 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  Button,
-  KeyboardAvoidingView,
-  AsyncStorage,
-  FlatList,
-  ActivityIndicator,
-  Image,
-} from 'react-native';
-import { getClientInformation, login } from './src/Auth';
 import { StackNavigator, TabNavigator } from 'react-navigation';
 
 import URLScreen from './src/screens/UrlScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import PostsScreen from './src/screens/PostsScreen';
 import EditorScreen from './src/screens/EditorScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
 const TabsNavigator = TabNavigator(
   {
@@ -25,7 +13,7 @@ const TabsNavigator = TabNavigator(
       screen: PostsScreen,
     },
     Settings: {
-      screen: PostsScreen,
+      screen: SettingsScreen,
     },
   },
   {
