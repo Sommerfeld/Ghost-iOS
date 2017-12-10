@@ -15,6 +15,8 @@ import {
 import { Constants, Util, LinearGradient } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 
+import { LightGrey } from '../Colors';
+
 class SettingsScreen extends React.Component {
   static navigationOptions = {
     title: 'Settings',
@@ -121,6 +123,7 @@ class SettingsScreen extends React.Component {
   render() {
     return (
       <SectionList
+        style={{ backgroundColor: LightGrey }}
         refreshing={this.state.refreshing}
         onRefresh={this.fetchConfig}
         ListFooterComponent={() => (

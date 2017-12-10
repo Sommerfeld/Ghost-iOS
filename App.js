@@ -1,6 +1,8 @@
 import React from 'react';
 import { StackNavigator, TabNavigator } from 'react-navigation';
 
+import { GhostBlue } from './src/Colors';
+
 import URLScreen from './src/screens/UrlScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import PostsScreen from './src/screens/PostsScreen';
@@ -18,7 +20,7 @@ const TabsNavigator = TabNavigator(
   },
   {
     tabBarOptions: {
-      activeTintColor: '#6dc4f3',
+      activeTintColor: GhostBlue,
     },
   }
 );

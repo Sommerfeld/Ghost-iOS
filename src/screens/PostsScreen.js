@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
 import { getClientInformation, login } from '../Auth';
+import { Red, MidGrey, DarkGrey, LightGrey } from '../Colors';
 
 class PostList extends React.Component {
   static navigationOptions = {
@@ -95,6 +96,7 @@ class PostList extends React.Component {
 
     return (
       <FlatList
+        style={{ backgroundColor: LightGrey }}
         refreshing={this.state.refreshing}
         onRefresh={this.fetchPosts}
         automaticallyAdjustContentInsets={true}
@@ -149,7 +151,7 @@ class PostList extends React.Component {
                 >
                   <Text
                     style={{
-                      color: item.status === 'draft' ? 'red' : '#15171a',
+                      color: item.status === 'draft' ? Red : '#15171a',
                     }}
                   >
                     {item.status}
