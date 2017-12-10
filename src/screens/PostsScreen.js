@@ -21,8 +21,12 @@ import { getClientInformation, login } from '../Auth';
 class PostList extends React.Component {
   static navigationOptions = {
     title: 'Your stories',
-    tabBarIcon: ({ tintColor }) => (
-      <Ionicons name="ios-paper-outline" size={32} color={tintColor} />
+    tabBarIcon: ({ tintColor, focused }) => (
+      <Ionicons
+        name={focused ? 'ios-paper' : 'ios-paper-outline'}
+        size={32}
+        color={tintColor}
+      />
     ),
     headerRight: (
       <TouchableOpacity>

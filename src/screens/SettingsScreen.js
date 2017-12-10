@@ -18,8 +18,12 @@ import { Ionicons } from '@expo/vector-icons';
 class SettingsScreen extends React.Component {
   static navigationOptions = {
     title: 'Settings',
-    tabBarIcon: ({ tintColor }) => (
-      <Ionicons name="ios-settings-outline" size={32} color={tintColor} />
+    tabBarIcon: ({ tintColor, focused }) => (
+      <Ionicons
+        name={focused ? 'ios-settings' : 'ios-settings-outline'}
+        size={32}
+        color={tintColor}
+      />
     ),
   };
 

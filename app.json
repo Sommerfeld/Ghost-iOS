@@ -3,10 +3,10 @@
     "name": "ghost-ios",
     "description": "An empty new project",
     "slug": "ghost-ios",
-    "privacy": "public",
+    "privacy": "unlisted",
     "sdkVersion": "23.0.0",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "primaryColor": "#cccccc",
     "icon": "./assets/icon.png",
     "splash": {

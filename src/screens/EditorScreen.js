@@ -30,7 +30,7 @@ class EditorScreen extends React.Component {
           placeholder="Write our awesome story"
           multiline
         />
-        <Button title="markdown" />
+        <View style={styles.buttonBar} />
       </KeyboardAvoidingView>
     );
   }
@@ -44,6 +44,9 @@ const styles = StyleSheet.create({
   textinput: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  buttonBar: {
+    height: 50,
   },
 });
 
