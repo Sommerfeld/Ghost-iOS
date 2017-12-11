@@ -10,12 +10,25 @@ import {
   FlatList,
   ActivityIndicator,
   Image,
+  TouchableOpacity,
 } from 'react-native';
+import { observer, inject } from 'mobx-react/native';
+import { FontAwesome } from '@expo/vector-icons';
 
+import { LightGrey, GhostBlue, MidGrey, White, DarkGrey } from '../Colors';
+
+@inject('store')
+@observer
 class EditorScreen extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { text: '' };
+
+    const { params } = props.navigation.state;
+    console.log(params);
+    this.state = {
+      text: JSON.parse(params.mobiledoc).cards[0][1].markdown,
+      title: params.title,
+    };
   }
 
   render() {
@@ -26,11 +39,60 @@ class EditorScreen extends React.Component {
         style={styles.container}
       >
         <TextInput
-          style={styles.textinput}
+          style={styles.titleInput}
+          value={this.state.title}
+          onChangeText={title => this.setState({ title })}
+          placeholder="Post Title"
+        />
+        <TextInput
+          style={styles.textInput}
+          selectioncolor={GhostBlue}
+          dataDetectorTypes={'none'}
+          value={this.state.text}
+          onChangeText={text => this.setState({ text })}
           placeholder="Write our awesome story"
           multiline
         />
-        <View style={styles.buttonBar} />
+        {this.props.store.uiStore.showShortcuts && (
+          <View style={styles.buttonBar}>
+            <TouchableOpacity>
+              <FontAwesome name="bold" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="italic" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="header" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="quote-left" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="list-ul" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="list-ol" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="link" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="picture-o" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="camera" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="eye" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="columns" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <FontAwesome name="question-circle" size={24} color={DarkGrey} />
+            </TouchableOpacity>
+          </View>
+        )}
       </KeyboardAvoidingView>
     );
   }
@@ -39,14 +101,27 @@ class EditorScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: LightGrey,
   },
-  textinput: {
+  textInput: {
     flex: 1,
     backgroundColor: '#fff',
+    padding: 8,
+  },
+  titleInput: {
+    backgroundColor: MidGrey,
+    fontSize: 22,
+    color: White,
+    fontWeight: '600',
+    height: 50,
+    padding: 8,
   },
   buttonBar: {
+    flexDirection: 'row',
+    width: '100%',
     height: 50,
+    alignItems: 'center',
+    justifyContent: 'space-around',
   },
 });
 

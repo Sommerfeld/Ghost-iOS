@@ -16,9 +16,13 @@ import {
 import { LinearGradient } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import moment from 'moment';
+import { observer, inject } from 'mobx-react/native';
+
 import { getClientInformation, login } from '../Auth';
 import { Red, MidGrey, DarkGrey, LightGrey } from '../Colors';
 
+@inject('store')
+@observer
 class PostList extends React.Component {
   static navigationOptions = {
     title: 'Your stories',
@@ -62,50 +66,26 @@ class PostList extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchPosts();
+    this.props.store.postStore.fetchPosts();
   }
 
-  fetchPosts = async () => {
-    this.setState({ refreshing: true });
-
-    try {
-      const data = await AsyncStorage.getItem('userInfo');
-      const clientInfo = JSON.parse(data);
-      const { posts } = await fetch(
-        `${
-          clientInfo.url
-        }/ghost/api/v0.1/posts/?status=all&staticPages=all&include=author,tags&formats=plaintext`,
-        {
-          headers: {
-            Authorization: `Bearer ${clientInfo.access_token}`,
-          },
-        }
-      ).then(res => res.json());
-      this.setState({ posts });
-    } catch (error) {
-      console.error(error);
-    }
-
-    this.setState({ refreshing: false });
-  };
-
   render() {
-    if (!this.state.posts) {
+    if (!this.props.store.postStore.posts) {
       return <ActivityIndicator size="large" color="#0000ff" />;
     }
 
     return (
       <FlatList
         style={{ backgroundColor: LightGrey }}
-        refreshing={this.state.refreshing}
-        onRefresh={this.fetchPosts}
+        refreshing={this.props.store.postStore.fetchingPosts}
+        onRefresh={this.props.store.postStore.fetchPosts}
         automaticallyAdjustContentInsets={true}
-        data={this.state.posts}
+        data={this.props.store.postStore.posts}
         keyExtractor={item => item.uuid}
         renderItem={({ item, index }) => (
           <TouchableHighlight
-            onPress={() => this.props.navigation.navigate('Editor')}
-            underlayColor="#9cd7f7"
+            onPress={() => this.props.navigation.navigate('Editor', item)}
+            underlayColor={MidGrey}
             style={{
               margin: 8,
               marginTop: index === 0 ? 8 : 0,

@@ -15,7 +15,7 @@ import {
 import { Constants, Util, LinearGradient } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 
-import { LightGrey } from '../Colors';
+import { LightGrey, DarkGrey, MidGrey } from '../Colors';
 
 class SettingsScreen extends React.Component {
   static navigationOptions = {
@@ -69,7 +69,7 @@ class SettingsScreen extends React.Component {
     return (
       <TouchableHighlight
         style={{
-          margin: 8,
+          marginHorizontal: 8,
           backgroundColor: '#fff',
           borderRadius: 4,
           overflow: 'hidden',
@@ -120,6 +120,50 @@ class SettingsScreen extends React.Component {
     );
   };
 
+  renderSettingItem = ({ item }) => {
+    return (
+      <TouchableHighlight
+        style={{
+          marginHorizontal: 8,
+          backgroundColor: '#fff',
+          borderRadius: 4,
+          overflow: 'hidden',
+        }}
+        underlayColor={MidGrey}
+        onPress={() => {
+          if (item.type === 'route') {
+            this.props.navigation.navigate(item.route);
+          }
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={{
+              flex: 1,
+              fontSize: 22,
+              color: '#15171a',
+              fontWeight: '300',
+              padding: 8,
+            }}
+          >
+            {item.text}
+          </Text>
+          <Ionicons
+            style={{ padding: 8 }}
+            name={'ios-arrow-forward'}
+            size={32}
+            color={DarkGrey}
+          />
+        </View>
+      </TouchableHighlight>
+    );
+  };
+
   render() {
     return (
       <SectionList
@@ -149,10 +193,15 @@ class SettingsScreen extends React.Component {
           {
             data: this.state.settings ? [this.state.settings] : [],
             title: 'Blogs',
+            renderItem: this.renderBlogItem,
+          },
+          {
+            data: [{ type: 'route', text: 'Shotcuts', route: 'Shortcuts' }],
+            title: 'Editor',
+            renderItem: this.renderSettingItem,
           },
         ]}
         keyExtractor={item => item}
-        renderItem={this.renderBlogItem}
       />
     );
   }
