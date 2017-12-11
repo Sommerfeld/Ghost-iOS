@@ -12,6 +12,7 @@ import {
   Image,
   TouchableHighlight,
   TouchableOpacity,
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
@@ -75,76 +76,78 @@ class PostList extends React.Component {
     }
 
     return (
-      <FlatList
-        style={{ backgroundColor: LightGrey }}
-        refreshing={this.props.store.postStore.fetchingPosts}
-        onRefresh={this.props.store.postStore.fetchPosts}
-        automaticallyAdjustContentInsets={true}
-        data={this.props.store.postStore.posts}
-        keyExtractor={item => item.uuid}
-        renderItem={({ item, index }) => (
-          <TouchableHighlight
-            onPress={() => this.props.navigation.navigate('Editor', item)}
-            underlayColor={MidGrey}
-            style={{
-              margin: 8,
-              marginTop: index === 0 ? 8 : 0,
-              backgroundColor: 'white',
-              borderRadius: 4,
-              overflow: 'hidden',
-            }}
-          >
-            <View>
-              {item.feature_image && (
-                <Image
-                  style={{ width: '100%', aspectRatio: 21 / 9 }}
-                  source={{ uri: item.feature_image }}
-                />
-              )}
-              <View style={{ padding: 8 }}>
-                <Text
-                  style={{
-                    fontSize: 22,
-                    color: '#15171a',
-                    fontWeight: '600',
-                  }}
-                >
-                  {item.title}{' '}
-                </Text>
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    fontWeight: '300',
-                    paddingBottom: 8,
-                    color: '#15171a',
-                    letterSpacing: 0.2,
-                  }}
-                >
-                  {item.plaintext}
-                </Text>
-                <Text
-                  style={{
-                    color: '#738a94',
-                    fontWeight: '300',
-                    letterSpacing: 0.2,
-                  }}
-                >
+      <SafeAreaView style={{ backgroundColor: LightGrey }}>
+        <FlatList
+          style={{ backgroundColor: LightGrey }}
+          refreshing={this.props.store.postStore.fetchingPosts}
+          onRefresh={this.props.store.postStore.fetchPosts}
+          automaticallyAdjustContentInsets={true}
+          data={this.props.store.postStore.posts}
+          keyExtractor={item => item.uuid}
+          renderItem={({ item, index }) => (
+            <TouchableHighlight
+              onPress={() => this.props.navigation.navigate('Editor', item)}
+              underlayColor={MidGrey}
+              style={{
+                margin: 8,
+                marginTop: index === 0 ? 8 : 0,
+                backgroundColor: 'white',
+                borderRadius: 4,
+                overflow: 'hidden',
+              }}
+            >
+              <View>
+                {item.feature_image && (
+                  <Image
+                    style={{ width: '100%', aspectRatio: 21 / 9 }}
+                    source={{ uri: item.feature_image }}
+                  />
+                )}
+                <View style={{ padding: 8 }}>
                   <Text
                     style={{
-                      color: item.status === 'draft' ? Red : '#15171a',
+                      fontSize: 22,
+                      color: '#15171a',
+                      fontWeight: '600',
                     }}
                   >
-                    {item.status}
-                  </Text>{' '}
-                  by{' '}
-                  <Text style={{ color: '#15171a' }}>{item.author.name}</Text> -{' '}
-                  {moment(item.published_at).from(moment.utc())}
-                </Text>
+                    {item.title}{' '}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontWeight: '300',
+                      paddingBottom: 8,
+                      color: '#15171a',
+                      letterSpacing: 0.2,
+                    }}
+                  >
+                    {item.plaintext}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#738a94',
+                      fontWeight: '300',
+                      letterSpacing: 0.2,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: item.status === 'draft' ? Red : '#15171a',
+                      }}
+                    >
+                      {item.status}
+                    </Text>{' '}
+                    by{' '}
+                    <Text style={{ color: '#15171a' }}>{item.author.name}</Text>{' '}
+                    - {moment(item.published_at).from(moment.utc())}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </TouchableHighlight>
-        )}
-      />
+            </TouchableHighlight>
+          )}
+        />
+      </SafeAreaView>
     );
   }
 }
