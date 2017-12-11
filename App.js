@@ -1,4 +1,5 @@
 import React from 'react';
+import { AsyncStorage } from 'react-native';
 import { StackNavigator, TabNavigator } from 'react-navigation';
 import { Provider, observer } from 'mobx-react/native';
 
@@ -28,38 +29,56 @@ const TabsNavigator = TabNavigator(
   }
 );
 
-const RootNavigator = StackNavigator(
-  {
-    Tabs: {
-      screen: TabsNavigator,
-    },
-    URL: {
-      screen: URLScreen,
-    },
-    Login: {
-      screen: LoginScreen,
-    },
-    Editor: {
-      screen: EditorScreen,
-    },
-    Shortcuts: {
-      screen: ShortcutsScreen,
-    },
-  },
-  {
-    initialRouteName: 'Tabs',
-    navigationOptions: {
-      headerTintColor: GhostBlue,
-      headerStyle: {
-        backgroundColor: '#f4f8fb',
-      },
-    },
-  }
-);
-
 @observer
 export default class App extends React.Component {
+  constructor() {
+    super();
+    this.state = { loading: true };
+  }
+
+  async componentDidMount() {
+    const info = await AsyncStorage.getItem('userInfo');
+
+    this.setState({
+      info,
+      loading: false,
+    });
+  }
+
   render() {
+    if (this.state.loading) {
+      return null;
+    }
+
+    const RootNavigator = StackNavigator(
+      {
+        Tabs: {
+          screen: TabsNavigator,
+        },
+        URL: {
+          screen: URLScreen,
+        },
+        Login: {
+          screen: LoginScreen,
+        },
+        Editor: {
+          screen: EditorScreen,
+        },
+        Shortcuts: {
+          screen: ShortcutsScreen,
+        },
+      },
+      {
+        initialRouteName: this.state.info ? 'Tabs' : 'URL',
+        navigationOptions: {
+          headerTintColor: GhostBlue,
+          headerStyle: {
+            backgroundColor: '#f4f8fb',
+          },
+        },
+      }
+    );
+
     return (
       <Provider store={store}>
         <RootNavigator />

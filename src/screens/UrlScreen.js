@@ -12,8 +12,13 @@ import {
   Image,
 } from 'react-native';
 import { getClientInformation, login } from '../Auth';
+import { LightGrey, DarkGrey, White, MidGrey, GhostBlue, Red } from '../Colors';
 
 class UrlScreen extends React.Component {
+  static navigationOptions = {
+    header: null,
+  };
+
   constructor(props) {
     super(props);
     this.state = { text: '' };
@@ -27,6 +32,7 @@ class UrlScreen extends React.Component {
         </View>
         <TextInput
           placeholder={'https://demo.ghost.io'}
+          placeholderTextColor={MidGrey}
           style={styles.textinput}
           onChangeText={text => this.setState({ text })}
           value={this.state.text}
@@ -39,6 +45,7 @@ class UrlScreen extends React.Component {
         )}
         <Button
           title="Next"
+          color={GhostBlue}
           onPress={() => {
             getClientInformation(this.state.text)
               .then(data => {
@@ -64,22 +71,24 @@ class UrlScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: DarkGrey,
     alignItems: 'center',
     justifyContent: 'center',
   },
   textinput: {
+    padding: 8,
     height: 40,
     width: '80%',
-    borderColor: 'gray',
+    borderColor: MidGrey,
     borderWidth: 1,
-    color: 'white',
+    borderRadius: 4,
+    color: White,
   },
   text: {
-    color: 'grey',
+    color: LightGrey,
   },
   errorText: {
-    color: 'red',
+    color: Red,
   },
 });
 

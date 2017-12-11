@@ -11,7 +11,9 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { NavigationActions } from 'react-navigation';
 import { getClientInformation, login } from '../Auth';
+import { LightGrey, DarkGrey, White, MidGrey, Red, GhostBlue } from '../Colors';
 
 class LoginScreen extends React.Component {
   constructor(props) {
@@ -25,7 +27,7 @@ class LoginScreen extends React.Component {
         <TextInput
           keyboardAppearance="dark"
           placeholder={'email'}
-          placeholderTextColor={'grey'}
+          placeholderTextColor={MidGrey}
           style={styles.textinput}
           onChangeText={text => this.setState({ email: text })}
           value={this.state.email}
@@ -42,7 +44,7 @@ class LoginScreen extends React.Component {
             this.textinput2 = textInput;
           }}
           placeholder={'password'}
-          placeholderTextColor={'grey'}
+          placeholderTextColor={MidGrey}
           style={styles.textinput}
           onChangeText={text => this.setState({ password: text })}
           value={this.state.password}
@@ -56,6 +58,7 @@ class LoginScreen extends React.Component {
         )}
         <Button
           title="Next"
+          color={GhostBlue}
           onPress={() => {
             const { params } = this.props.navigation.state;
             login(
@@ -76,7 +79,15 @@ class LoginScreen extends React.Component {
                       ...data,
                     })
                   )
-                    .then(() => this.props.navigation.navigate('PostList'))
+                    .then(() => {
+                      const resetAction = NavigationActions.reset({
+                        index: 0,
+                        actions: [
+                          NavigationActions.navigate({ routeName: 'Tabs' }),
+                        ],
+                      });
+                      this.props.navigation.dispatch(resetAction);
+                    })
                     .catch(err => console.log(err));
                 } else {
                   this.setState({ errorMessage: 'Wrong email or password.' });
@@ -98,22 +109,25 @@ class LoginScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: DarkGrey,
     alignItems: 'center',
     justifyContent: 'center',
   },
   textinput: {
+    marginBottom: 8,
+    padding: 8,
     height: 40,
     width: '80%',
-    borderColor: 'gray',
+    borderColor: MidGrey,
     borderWidth: 1,
-    color: 'white',
+    borderRadius: 4,
+    color: White,
   },
   text: {
     color: 'grey',
   },
   errorText: {
-    color: 'red',
+    color: Red,
   },
 });
 

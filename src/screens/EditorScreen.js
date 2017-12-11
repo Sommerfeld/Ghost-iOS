@@ -32,6 +32,8 @@ class EditorScreen extends React.Component {
   }
 
   render() {
+    const { showShortcuts, darkEditor } = this.props.store.uiStore;
+
     return (
       <KeyboardAvoidingView
         keyboardVerticalOffset={88}
@@ -45,15 +47,16 @@ class EditorScreen extends React.Component {
           placeholder="Post Title"
         />
         <TextInput
-          style={styles.textInput}
+          style={darkEditor ? styles.textInputDark : styles.textInput}
           selectioncolor={GhostBlue}
+          keyboardAppearance={darkEditor ? 'dark' : 'light'}
           dataDetectorTypes={'none'}
           value={this.state.text}
           onChangeText={text => this.setState({ text })}
           placeholder="Write our awesome story"
           multiline
         />
-        {this.props.store.uiStore.showShortcuts && (
+        {showShortcuts && (
           <View style={styles.buttonBar}>
             <TouchableOpacity>
               <FontAwesome name="bold" size={24} color={DarkGrey} />
@@ -105,7 +108,13 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: White,
+    padding: 8,
+  },
+  textInputDark: {
+    flex: 1,
+    backgroundColor: DarkGrey,
+    color: White,
     padding: 8,
   },
   titleInput: {

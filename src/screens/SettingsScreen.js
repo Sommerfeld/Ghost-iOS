@@ -11,12 +11,17 @@ import {
   ActivityIndicator,
   Image,
   TouchableHighlight,
+  Switch,
 } from 'react-native';
 import { Constants, Util, LinearGradient } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
+import { observer, inject } from 'mobx-react/native';
+import { NavigationActions } from 'react-navigation';
 
-import { LightGrey, DarkGrey, MidGrey } from '../Colors';
+import { LightGrey, DarkGrey, MidGrey, GhostBlue } from '../Colors';
 
+@inject('store')
+@observer
 class SettingsScreen extends React.Component {
   static navigationOptions = {
     title: 'Settings',
@@ -130,11 +135,15 @@ class SettingsScreen extends React.Component {
           overflow: 'hidden',
         }}
         underlayColor={MidGrey}
-        onPress={() => {
-          if (item.type === 'route') {
-            this.props.navigation.navigate(item.route);
-          }
-        }}
+        onPress={
+          item.type === 'setting'
+            ? undefined
+            : () => {
+                if (item.type === 'route') {
+                  this.props.navigation.navigate(item.route);
+                }
+              }
+        }
       >
         <View
           style={{
@@ -153,12 +162,17 @@ class SettingsScreen extends React.Component {
           >
             {item.text}
           </Text>
-          <Ionicons
-            style={{ padding: 8 }}
-            name={'ios-arrow-forward'}
-            size={32}
-            color={DarkGrey}
-          />
+          {item.type === 'setting' && (
+            <Switch value={item.value} onValueChange={item.onValueChange} />
+          )}
+          {!item.hideArrow && (
+            <Ionicons
+              style={{ padding: 8 }}
+              name={'ios-arrow-forward'}
+              size={32}
+              color={DarkGrey}
+            />
+          )}
         </View>
       </TouchableHighlight>
     );
@@ -179,6 +193,18 @@ class SettingsScreen extends React.Component {
               {'\n'}
               Device Year {Constants.deviceYearClass}
             </Text>
+            <Button
+              title="Logout"
+              color={GhostBlue}
+              onPress={() => {
+                const resetAction = NavigationActions.reset({
+                  index: 0,
+                  actions: [NavigationActions.navigate({ routeName: 'URL' })],
+                });
+                this.props.navigation.dispatch(resetAction);
+                AsyncStorage.removeItem('userInfo');
+              }}
+            />
           </View>
         )}
         renderSectionHeader={({ section }) => (
@@ -196,12 +222,23 @@ class SettingsScreen extends React.Component {
             renderItem: this.renderBlogItem,
           },
           {
-            data: [{ type: 'route', text: 'Shotcuts', route: 'Shortcuts' }],
+            data: [
+              { type: 'route', text: 'Shotcuts', route: 'Shortcuts' },
+              {
+                type: 'setting',
+                hideArrow: true,
+                text: 'Dark Editor',
+                value: this.props.store.uiStore.darkEditor,
+                onValueChange: () =>
+                  (this.props.store.uiStore.darkEditor = !this.props.store
+                    .uiStore.darkEditor),
+              },
+            ],
             title: 'Editor',
             renderItem: this.renderSettingItem,
           },
         ]}
-        keyExtractor={item => item}
+        keyExtractor={item => item.text}
       />
     );
   }
