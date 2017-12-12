@@ -25,14 +25,41 @@ class EditorScreen extends React.Component {
 
     const { params } = props.navigation.state;
     console.log(params);
+    const markdown = JSON.parse(params.mobiledoc).cards[0][1].markdown;
     this.state = {
-      text: JSON.parse(params.mobiledoc).cards[0][1].markdown,
+      text: markdown,
       title: params.title,
+      selection: { start: 0, end: 0 },
     };
   }
 
+  performShortcut = shortcut => {
+    const { text, selection: { start, end } } = this.state;
+    if (shortcut.type === 'annotateWords') {
+      const mid = text.substring(start, end);
+      const newCourser = mid.length ? end : end - shortcut.syntax.length;
+      this.setState({
+        text: `${text.substring(0, start)}${shortcut.syntax}${mid}${
+          shortcut.syntax
+        }${text.substring(end, text.length)}`,
+        selection: {
+          start: newCourser,
+          end: newCourser,
+        },
+      });
+    } else {
+      alert(`unhandelt shortcut "${shortcut.name}"`);
+    }
+  };
+
   render() {
-    const { showShortcuts, darkEditor } = this.props.store.uiStore;
+    const {
+      showShortcuts,
+      darkEditor,
+      markdownShortcuts,
+    } = this.props.store.uiStore;
+
+    console.log(this.state.selection);
 
     return (
       <KeyboardAvoidingView
@@ -52,48 +79,30 @@ class EditorScreen extends React.Component {
           keyboardAppearance={darkEditor ? 'dark' : 'light'}
           dataDetectorTypes={'none'}
           value={this.state.text}
+          selection={this.state.selection}
+          onSelectionChange={event =>
+            this.setState({ selection: event.nativeEvent.selection })
+          }
           onChangeText={text => this.setState({ text })}
           placeholder="Write our awesome story"
           multiline
         />
         {showShortcuts && (
           <View style={styles.buttonBar}>
-            <TouchableOpacity>
-              <FontAwesome name="bold" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="italic" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="header" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="quote-left" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="list-ul" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="list-ol" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="link" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="picture-o" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="camera" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="eye" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="columns" size={24} color={DarkGrey} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <FontAwesome name="question-circle" size={24} color={DarkGrey} />
-            </TouchableOpacity>
+            {markdownShortcuts.map(shortcut => (
+              <TouchableOpacity
+                style={{ flex: 1, alignItems: 'center' }}
+                onPress={() => this.performShortcut(shortcut)}
+              >
+                <View>
+                  <FontAwesome
+                    name={shortcut.icon}
+                    size={24}
+                    color={DarkGrey}
+                  />
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
         )}
       </KeyboardAvoidingView>
@@ -110,12 +119,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: White,
     padding: 8,
+    fontSize: 16,
   },
   textInputDark: {
     flex: 1,
     backgroundColor: DarkGrey,
     color: White,
     padding: 8,
+    fontSize: 16,
   },
   titleInput: {
     backgroundColor: MidGrey,
