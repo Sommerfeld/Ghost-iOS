@@ -25,7 +25,6 @@ class EditorScreen extends React.Component {
     super(props);
 
     const { params } = props.navigation.state;
-    console.log(params);
     const markdown = JSON.parse(params.mobiledoc).cards[0][1].markdown;
     this.state = {
       text: markdown,
@@ -105,8 +104,6 @@ class EditorScreen extends React.Component {
       darkEditor,
       markdownShortcuts,
     } = this.props.store.uiStore;
-
-    console.log(this.state.selection);
 
     return (
       <KeyboardAvoidingView

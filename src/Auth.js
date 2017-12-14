@@ -1,6 +1,5 @@
 export function getClientInformation(url) {
   const configURL = `${url}/ghost/api/v0.1/configuration/`;
-  console.log(configURL);
   return fetch(configURL)
     .then(function(data) {
       return data.json();
@@ -8,7 +7,7 @@ export function getClientInformation(url) {
     .then(function(json) {
       return {
         clientId: json.configuration[0].clientId,
-        clientSecret: json.configuration[0].clientSecret
+        clientSecret: json.configuration[0].clientSecret,
       };
     });
 }
@@ -29,13 +28,12 @@ export function login(username, password, url, clientSecret, clientId) {
     username,
     password,
     client_secret: clientSecret,
-    client_id: clientId
+    client_id: clientId,
   };
-  console.log(body);
   return fetch(tokenURL, {
     method: 'POST',
     body: jsonToString(body),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   }).then(function(data) {
     return data.json();
   });
