@@ -44,7 +44,7 @@ export default [
     icon: 'picture-o',
   },
   {
-    name: 'camera',
+    name: 'unsplash',
     icon: 'camera',
   },
   {

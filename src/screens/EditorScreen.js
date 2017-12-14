@@ -93,6 +93,22 @@ class EditorScreen extends React.Component {
           );
         }
       }
+    } else if (shortcut.name === 'unsplash') {
+      this.props.navigation.navigate('Unsplash', {
+        selectedImage: image => {
+          const mid = text.substring(start, end);
+          this.setState({
+            text: `${text.substring(0, start)}![${mid}](${
+              image.urls.regular
+            })<small>Photo by [${image.user.name}](${
+              image.links.html
+            }?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit) / [Unsplash](https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit)</small>${text.substring(
+              end,
+              text.length
+            )}`,
+          });
+        },
+      });
     } else {
       alert(`unhandelt shortcut "${shortcut.name}"`);
     }

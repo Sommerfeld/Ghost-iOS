@@ -12,6 +12,7 @@ import PostsScreen from './src/screens/PostsScreen';
 import EditorScreen from './src/screens/EditorScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import ShortcutsScreen from './src/screens/ShortcutsScreen';
+import UnsplashScreen from './src/screens/UnsplashScreen';
 
 const TabsNavigator = TabNavigator(
   {
@@ -66,6 +67,9 @@ export default class App extends React.Component {
         },
         Shortcuts: {
           screen: ShortcutsScreen,
+        },
+        Unsplash: {
+          screen: UnsplashScreen,
         },
       },
       {
