@@ -19,6 +19,7 @@ class PostStore {
         {
           headers: {
             Authorization: `Bearer ${clientInfo.access_token}`,
+            'App-Pragma': 'no-cache',
           },
         }
       ).then(res => res.json());

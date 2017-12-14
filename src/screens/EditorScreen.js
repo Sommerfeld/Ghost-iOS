@@ -12,6 +12,7 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import { ImagePicker } from 'expo';
 import { observer, inject } from 'mobx-react/native';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -33,7 +34,7 @@ class EditorScreen extends React.Component {
     };
   }
 
-  performShortcut = shortcut => {
+  performShortcut = async shortcut => {
     const { text, selection: { start, end } } = this.state;
     if (shortcut.type === 'annotateWords') {
       const mid = text.substring(start, end);
@@ -47,6 +48,52 @@ class EditorScreen extends React.Component {
           end: newCourser,
         },
       });
+    } else if (shortcut.name === 'picture') {
+      const imageData = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: 'Images',
+        base64: true,
+      });
+      if (imageData.cancelled === false) {
+        var formData = new FormData();
+        formData.append('uploadimage', {
+          uri: imageData.uri,
+          name: imageData.uri.split('/').pop(),
+          type: 'image/jpg',
+        });
+        const data = await AsyncStorage.getItem('userInfo');
+        const clientInfo = JSON.parse(data);
+        const res = await fetch(
+          'http://207.154.225.34/ghost/api/v0.1/uploads/',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${clientInfo.access_token}`,
+            },
+            body: formData,
+          }
+        );
+        if (res.status === 200) {
+          const imageurl = await res.text();
+          const mid = text.substring(start, end);
+          const newCourser = mid.length ? end : end - imageurl.length - 3;
+          this.setState(
+            {
+              text: `${text.substring(
+                0,
+                start
+              )}![${mid}](${imageurl})${text.substring(end, text.length)}`,
+              selection: {
+                start: newCourser,
+                end: newCourser,
+              },
+            },
+            () => {
+              this.textInput.focus();
+            }
+          );
+        }
+      }
     } else {
       alert(`unhandelt shortcut "${shortcut.name}"`);
     }
@@ -74,6 +121,7 @@ class EditorScreen extends React.Component {
           placeholder="Post Title"
         />
         <TextInput
+          ref={textInput => (this.textInput = textInput)}
           style={darkEditor ? styles.textInputDark : styles.textInput}
           selectioncolor={GhostBlue}
           keyboardAppearance={darkEditor ? 'dark' : 'light'}
@@ -91,6 +139,7 @@ class EditorScreen extends React.Component {
           <View style={styles.buttonBar}>
             {markdownShortcuts.map(shortcut => (
               <TouchableOpacity
+                key={shortcut.name}
                 style={{ flex: 1, alignItems: 'center' }}
                 onPress={() => this.performShortcut(shortcut)}
               >
