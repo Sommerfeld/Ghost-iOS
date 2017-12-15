@@ -1,4 +1,4 @@
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, Dimensions } from 'react-native';
 import { observable, action, runInAction, autorun, computed } from 'mobx';
 import shortcuts from '../Shortcuts';
 
@@ -6,6 +6,19 @@ class UiStore {
   @observable darkEditor = false;
   @observable showShortcuts = true;
   @observable disabledShortcuts = [];
+  @observable
+  orientation = Dimensions.get('window').height > Dimensions.get('window').width
+    ? 'PORTRAIT'
+    : 'LANDSCAPE';
+
+  constructor() {
+    Dimensions.addEventListener('change', () => {
+      this.orientation =
+        Dimensions.get('window').height > Dimensions.get('window').width
+          ? 'PORTRAIT'
+          : 'LANDSCAPE';
+    });
+  }
 
   @computed
   get markdownShortcuts() {

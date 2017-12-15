@@ -14,6 +14,8 @@ import {
   ScrollView,
   WebView,
   Linking,
+  Keyboard,
+  Animated,
 } from 'react-native';
 import { ImagePicker } from 'expo';
 import { observer, inject } from 'mobx-react/native';
@@ -39,12 +41,40 @@ class EditorScreen extends React.Component {
     super(props);
 
     const { params } = props.navigation.state;
-    const markdown = JSON.parse(params.mobiledoc).cards[0][1].markdown;
+    const markdown = params.mobiledoc
+      ? JSON.parse(params.mobiledoc).cards[0][1].markdown
+      : '';
     this.state = {
       text: markdown,
       title: params.title,
       selection: { start: 0, end: 0 },
     };
+
+    this.keyboardHeight = new Animated.Value(0);
+
+    this.keyboardWillShowSub = Keyboard.addListener(
+      'keyboardWillShow',
+      event => {
+        Animated.timing(this.keyboardHeight, {
+          duration: event.duration,
+          toValue: event.endCoordinates.height,
+        }).start();
+      }
+    );
+    this.keyboardWillHideSub = Keyboard.addListener(
+      'keyboardWillHide',
+      event => {
+        Animated.timing(this.keyboardHeight, {
+          duration: event.duration,
+          toValue: 0,
+        }).start();
+      }
+    );
+  }
+
+  componentWillUnmount() {
+    this.keyboardWillShowSub.remove();
+    this.keyboardWillHideSub.remove();
   }
 
   performShortcut = async shortcut => {
@@ -149,84 +179,85 @@ class EditorScreen extends React.Component {
     const blogUrl = 'http://207.154.225.34';
 
     return (
-      <KeyboardAvoidingView
-        keyboardVerticalOffset={88}
-        behavior="padding"
-        style={styles.container}
+      <Animated.View
+        style={[styles.container, { paddingBottom: this.keyboardHeight }]}
       >
-        {!this.state.showPreview && (
-          <TextInput
-            style={styles.titleInput}
-            value={this.state.title}
-            onChangeText={title => this.setState({ title })}
-            placeholder="Post Title"
-          />
-        )}
-
-        {this.state.showPreview && (
-          // <ScrollView style={{ flex: 1 }}>
-          //   <Markdown
-          //     rules={{
-          //       image: {
-          //         react: (node, output, state) => (
-          //           <Image
-          //             style={{ width: '100%', height: 150 }}
-          //             key={state.key}
-          //             source={{
-          //               uri: node.target.startsWith('http')
-          //                 ? node.target
-          //                 : `http://207.154.225.34${node.target}`,
-          //             }}
-          //           />
-          //         ),
-          //       },
-          //     }}
-          //   >
-          //     {this.state.text}
-          //   </Markdown>
-          // </ScrollView>
-          <WebView
-            onMessage={this.onMessage}
-            source={{
-              html: preview.replace('$$title', this.state.title).replace(
-                '$$content',
-                md
-                  .render(this.state.text)
-                  .replace(
-                    /(<a[^>]*href=["'])(\/[^>]*>)/gi,
-                    '$1' + blogUrl + '$2'
-                  )
-                  // replace all relative URLs in images
-                  .replace(
-                    /(<img[^>]*src=["'])(\/[^>]*>)/gi,
-                    '$1' + blogUrl + '$2'
-                  )
-                  // replace all relative URLs in videos
-                  .replace(
-                    /(<source[^>]*src=["'])(\/[^>]*>)/gi,
-                    '$1' + blogUrl + '$2'
-                  )
-              ),
-            }}
-          />
-        )}
-        {!this.state.showPreview && (
-          <TextInput
-            ref={textInput => (this.textInput = textInput)}
-            style={darkEditor ? styles.textInputDark : styles.textInput}
-            selectioncolor={GhostBlue}
-            keyboardAppearance={darkEditor ? 'dark' : 'light'}
-            dataDetectorTypes={'none'}
-            value={this.state.text}
-            selection={this.state.selection}
-            onSelectionChange={event =>
-              this.setState({ selection: event.nativeEvent.selection })
-            }
-            onChangeText={text => this.setState({ text })}
-            placeholder="Write our awesome story"
-            multiline
-          />
-        )}
+        {!this.state.showPreview &&
+          this.props.store.uiStore.orientation === 'PORTRAIT' && (
+            <TextInput
+              style={styles.titleInput}
+              value={this.state.title}
+              onChangeText={title => this.setState({ title })}
+              placeholder="Post Title"
+            />
+          )}
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {(this.state.showPreview ||
+            this.props.store.uiStore.orientation !== 'PORTRAIT') && (
+            // <ScrollView style={{ flex: 1 }}>
+            //   <Markdown
+            //     rules={{
+            //       image: {
+            //         react: (node, output, state) => (
+            //           <Image
+            //             style={{ width: '100%', height: 150 }}
+            //             key={state.key}
+            //             source={{
+            //               uri: node.target.startsWith('http')
+            //                 ? node.target
+            //                 : `http://207.154.225.34${node.target}`,
+            //             }}
+            //           />
+            //         ),
+            //       },
+            //     }}
+            //   >
+            //     {this.state.text}
+            //   </Markdown>
+            // </ScrollView>
+            <WebView
+              onMessage={this.onMessage}
+              source={{
+                html: preview.replace('$$title', this.state.title).replace(
+                  '$$content',
+                  md
+                    .render(this.state.text)
+                    .replace(
+                      /(<a[^>]*href=["'])(\/[^>]*>)/gi,
+                      '$1' + blogUrl + '$2'
+                    )
+                    // replace all relative URLs in images
+                    .replace(
+                      /(<img[^>]*src=["'])(\/[^>]*>)/gi,
+                      '$1' + blogUrl + '$2'
+                    )
+                    // replace all relative URLs in videos
+                    .replace(
+                      /(<source[^>]*src=["'])(\/[^>]*>)/gi,
+                      '$1' + blogUrl + '$2'
+                    )
+                ),
+              }}
+            />
+          )}
+          {!this.state.showPreview && (
+            <TextInput
+              ref={textInput => (this.textInput = textInput)}
+              style={darkEditor ? styles.textInputDark : styles.textInput}
+              selectioncolor={GhostBlue}
+              keyboardAppearance={darkEditor ? 'dark' : 'light'}
+              dataDetectorTypes={'none'}
+              value={this.state.text}
+              selection={this.state.selection}
+              onSelectionChange={event =>
+                this.setState({ selection: event.nativeEvent.selection })
+              }
+              onChangeText={text => this.setState({ text })}
+              placeholder="Write our awesome story"
+              multiline
+            />
+          )}
+        </View>
         {showShortcuts && (
           <View style={styles.buttonBar}>
             {markdownShortcuts.map(shortcut => (
@@ -246,7 +277,7 @@ class EditorScreen extends React.Component {
             ))}
           </View>
         )}
-      </KeyboardAvoidingView>
+      </Animated.View>
     );
   }
 }
