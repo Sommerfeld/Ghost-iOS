@@ -11,12 +11,26 @@ import {
   ActivityIndicator,
   Image,
   TouchableOpacity,
+  ScrollView,
+  WebView,
+  Linking,
 } from 'react-native';
 import { ImagePicker } from 'expo';
 import { observer, inject } from 'mobx-react/native';
 import { FontAwesome } from '@expo/vector-icons';
+import MarkdownIt from 'markdown-it';
 
+import preview from '../preview';
 import { LightGrey, GhostBlue, MidGrey, White, DarkGrey } from '../Colors';
+
+const md = MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+})
+  .use(require('markdown-it-footnote'))
+  .use(require('markdown-it-lazy-headers'))
+  .use(require('markdown-it-mark'));
 
 @inject('store')
 @observer
@@ -109,8 +123,19 @@ class EditorScreen extends React.Component {
           });
         },
       });
+    } else if (shortcut.name === 'preview') {
+      this.setState({
+        showPreview: !this.state.showPreview,
+      });
     } else {
       alert(`unhandelt shortcut "${shortcut.name}"`);
+    }
+  };
+
+  onMessage = event => {
+    const data = event.nativeEvent.data;
+    if (data) {
+      Linking.openURL(event.nativeEvent.data);
     }
   };
 
@@ -121,33 +146,87 @@ class EditorScreen extends React.Component {
       markdownShortcuts,
     } = this.props.store.uiStore;
 
+    const blogUrl = 'http://207.154.225.34';
+
     return (
       <KeyboardAvoidingView
         keyboardVerticalOffset={88}
         behavior="padding"
         style={styles.container}
       >
-        <TextInput
-          style={styles.titleInput}
-          value={this.state.title}
-          onChangeText={title => this.setState({ title })}
-          placeholder="Post Title"
-        />
-        <TextInput
-          ref={textInput => (this.textInput = textInput)}
-          style={darkEditor ? styles.textInputDark : styles.textInput}
-          selectioncolor={GhostBlue}
-          keyboardAppearance={darkEditor ? 'dark' : 'light'}
-          dataDetectorTypes={'none'}
-          value={this.state.text}
-          selection={this.state.selection}
-          onSelectionChange={event =>
-            this.setState({ selection: event.nativeEvent.selection })
-          }
-          onChangeText={text => this.setState({ text })}
-          placeholder="Write our awesome story"
-          multiline
-        />
+        {!this.state.showPreview && (
+          <TextInput
+            style={styles.titleInput}
+            value={this.state.title}
+            onChangeText={title => this.setState({ title })}
+            placeholder="Post Title"
+          />
+        )}
+
+        {this.state.showPreview && (
+          // <ScrollView style={{ flex: 1 }}>
+          //   <Markdown
+          //     rules={{
+          //       image: {
+          //         react: (node, output, state) => (
+          //           <Image
+          //             style={{ width: '100%', height: 150 }}
+          //             key={state.key}
+          //             source={{
+          //               uri: node.target.startsWith('http')
+          //                 ? node.target
+          //                 : `http://207.154.225.34${node.target}`,
+          //             }}
+          //           />
+          //         ),
+          //       },
+          //     }}
+          //   >
+          //     {this.state.text}
+          //   </Markdown>
+          // </ScrollView>
+          <WebView
+            onMessage={this.onMessage}
+            source={{
+              html: preview.replace('$$title', this.state.title).replace(
+                '$$content',
+                md
+                  .render(this.state.text)
+                  .replace(
+                    /(<a[^>]*href=["'])(\/[^>]*>)/gi,
+                    '$1' + blogUrl + '$2'
+                  )
+                  // replace all relative URLs in images
+                  .replace(
+                    /(<img[^>]*src=["'])(\/[^>]*>)/gi,
+                    '$1' + blogUrl + '$2'
+                  )
+                  // replace all relative URLs in videos
+                  .replace(
+                    /(<source[^>]*src=["'])(\/[^>]*>)/gi,
+                    '$1' + blogUrl + '$2'
+                  )
+              ),
+            }}
+          />
+        )}
+        {!this.state.showPreview && (
+          <TextInput
+            ref={textInput => (this.textInput = textInput)}
+            style={darkEditor ? styles.textInputDark : styles.textInput}
+            selectioncolor={GhostBlue}
+            keyboardAppearance={darkEditor ? 'dark' : 'light'}
+            dataDetectorTypes={'none'}
+            value={this.state.text}
+            selection={this.state.selection}
+            onSelectionChange={event =>
+              this.setState({ selection: event.nativeEvent.selection })
+            }
+            onChangeText={text => this.setState({ text })}
+            placeholder="Write our awesome story"
+            multiline
+          />
+        )}
         {showShortcuts && (
           <View style={styles.buttonBar}>
             {markdownShortcuts.map(shortcut => (
