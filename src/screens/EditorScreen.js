@@ -91,6 +91,88 @@ class EditorScreen extends React.Component {
           end: newCourser,
         },
       });
+    } else if (shortcut.type === 'annotateLine') {
+      const { syntax: linePrefix } = shortcut;
+      const firstLineStart = text.substring(0, start).lastIndexOf('\n') + 1;
+      const lastLineEnd =
+        end + Math.max(0, text.substring(end, text.length).indexOf('\n'));
+
+      const selectedLinesText = text.substring(firstLineStart, lastLineEnd);
+
+      const selectedLines = selectedLinesText.split('\n');
+
+      const currentMiniumStack = selectedLines.reduce((result, l) => {
+        const firstWord = l.split(' ')[0];
+        if (shortcut.name === 'ol') {
+          if (!!firstWord.match(/^\d+.$/)) {
+            console.log('isPrefix');
+            return Math.min(result, 1);
+          } else {
+            console.log('is not prefix');
+            return 0;
+          }
+        }
+
+        if (firstWord.split('').some(c => c !== linePrefix)) {
+          return 0;
+        } else {
+          return Math.min(result, firstWord.length);
+        }
+      }, shortcut.maxStack);
+
+      console.log(currentMiniumStack);
+
+      const nextStack =
+        currentMiniumStack >= shortcut.maxStack ? 0 : currentMiniumStack + 1;
+
+      let newLinePrefix = '';
+      if (nextStack) {
+        for (let i = 0; i < nextStack; i++) {
+          newLinePrefix += linePrefix;
+        }
+        newLinePrefix += ' ';
+      }
+
+      const newSelectedLines = selectedLines.map((l, i) => {
+        const words = l.split(' ');
+        const lineStart = words[0];
+        let firstWordIsPrefix;
+        if (shortcut.name === 'ol') {
+          firstWordIsPrefix = !!lineStart.match(/^\d+.$/);
+        } else {
+          firstWordIsPrefix = lineStart.split('').every(c => c === linePrefix);
+        }
+
+        console.log(firstWordIsPrefix);
+
+        if (firstWordIsPrefix) {
+          words.shift();
+        }
+        return `${
+          shortcut.name === 'ol' && newLinePrefix ? `${i + 1}. ` : newLinePrefix
+        }${words.join(' ')}`;
+      });
+
+      const linesBeforeSelection = text.substring(0, firstLineStart);
+      const linesAfterSelection = text.substring(lastLineEnd, text.length);
+
+      const newText = `${linesBeforeSelection}${newSelectedLines.join(
+        '\n'
+      )}${linesAfterSelection}`;
+
+      // let newText = `${text.substring(
+      //   0,
+      //   firstLineStart
+      // )}${linePrefix} ${text.substring(firstLineStart, start)}${text
+      //   .substring(start, end)
+      //   .replace(/\n/g, `\n${linePrefix} `)}${text.substring(
+      //   end,
+      //   text.length
+      // )}`;
+
+      this.setState({
+        text: newText,
+      });
     } else if (shortcut.name === 'picture') {
       const imageData = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: 'Images',

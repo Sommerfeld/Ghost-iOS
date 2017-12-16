@@ -16,24 +16,27 @@ export default [
     icon: 'header',
     type: 'annotateLine',
     syntax: '#',
+    maxStack: 3,
   },
   {
     name: 'quote',
     icon: 'quote-left',
     type: 'annotateLine',
-    syntax: '> ',
+    syntax: '>',
+    maxStack: 1,
   },
   {
     name: 'ul',
     icon: 'list-ul',
     type: 'annotateLine',
-    syntax: '> ',
+    syntax: '*',
+    maxStack: 1,
   },
   {
     name: 'ol',
     icon: 'list-ol',
     type: 'annotateLine',
-    syntax: '> ',
+    maxStack: 1,
   },
   {
     name: 'link',
@@ -50,10 +53,6 @@ export default [
   {
     name: 'preview',
     icon: 'eye',
-  },
-  {
-    name: 'split',
-    icon: 'columns',
   },
   {
     name: 'help',
